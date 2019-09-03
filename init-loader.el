@@ -133,6 +133,11 @@ example, 00_foo.el, 01_bar.el ... 99_keybinds.el."
   "Regular expression of GNU/Linux specific configuration file names."
   :type 'regexp)
 
+(defcustom init-loader-host-regexp-function
+  (lambda () (concat "\\`host-" (downcase (car (split-string (system-name) "\\.")))))
+  "Regular expression of host specific configuration file names."
+  :type 'function)
+
 ;;;###autoload
 (defun* init-loader-load (&optional (init-dir init-loader-directory))
   "Load configuration files in INIT-DIR."
@@ -166,6 +171,9 @@ example, 00_foo.el, 01_bar.el ... 99_keybinds.el."
     ;; no-window
     (when (not window-system)
       (init-loader-re-load init-loader-nw-regexp init-dir))
+
+    (when init-loader-host-regexp-function
+      (init-loader-re-load (funcall init-loader-host-regexp-function) init-dir))
 
     (case init-loader-show-log-after-init
       (error-only (add-hook 'after-init-hook 'init-loader--show-log-error-only))
